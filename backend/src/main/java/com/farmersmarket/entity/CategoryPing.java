@@ -2,24 +2,35 @@ package com.farmersmarket.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 /**
- * Minimal entity mapping to verify JPA connectivity with the existing Supabase schema.
+ * Minimal entity mapping to verify JPA connectivity with the existing Supabase categories table.
  */
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", schema = "public")
 public class CategoryPing {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "name", nullable = false, unique = true, length = 100)
     private String name;
+
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "icon", length = 100)
+    private String icon;
+
+    @Column(name = "is_active")
+    private Boolean isActive;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -27,7 +38,7 @@ public class CategoryPing {
     public CategoryPing() {
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
@@ -35,7 +46,20 @@ public class CategoryPing {
         return name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
     public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 }
+
