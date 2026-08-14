@@ -1,0 +1,15 @@
+package com.farmersmarket.entity;
+
+public enum NotificationType {
+    ORDER_PLACED,
+    ORDER_CONFIRMED,
+    ORDER_SHIPPED,
+    OUT_FOR_DELIVERY,
+    ORDER_DELIVERED,
+    ORDER_CANCELLED,
+    PAYMENT_SUCCESS,
+    PAYMENT_FAILED,
+    NEW_ORDER_FOR_FARMER,
+    REVIEW_RECEIVED,
+    GENERAL
+}
