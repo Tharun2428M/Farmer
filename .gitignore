@@ -1,0 +1,28 @@
+# Maven & Build outputs
+backend/target/
+frontend/dist/
+node_modules/
+.gradle/
+build/
+
+# Local Environment Variables & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Spring Boot Configuration Secrets
+backend/src/main/resources/application-local.properties
+backend/src/main/resources/application-secrets.properties
+
+# OS & IDE Files
+.DS_Store
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+Thumbs.db
