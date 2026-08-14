@@ -39,6 +39,7 @@ export const Navbar = () => {
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/products', label: 'Produce Catalog' },
+    ...(role === 'FARMER' ? [{ path: '/farmer/products', label: '🌾 My Produce' }] : []),
     { path: '/categories', label: 'Categories' },
     { path: '/about', label: 'Our Mission' },
     { path: '/contact', label: 'Contact & Support' }

@@ -13,6 +13,10 @@ import Login from '../pages/auth/Login';
 import Signup from '../pages/auth/Signup';
 import CustomerDashboard from '../pages/customer/CustomerDashboard';
 import FarmerDashboard from '../pages/farmer/FarmerDashboard';
+import FarmerProductList from '../pages/farmer/FarmerProductList';
+import AddProductPage from '../pages/farmer/AddProductPage';
+import EditProductPage from '../pages/farmer/EditProductPage';
+import FarmerProfilePage from '../pages/farmer/FarmerProfilePage';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import ProtectedRoute from '../components/common/ProtectedRoute';
 
@@ -56,7 +60,7 @@ export const AppRoutes = () => {
           path="farmer"
           element={
             <ProtectedRoute allowedRoles={['FARMER']}>
-              <Navigate to="/farmer/dashboard" replace />
+              <FarmerDashboard />
             </ProtectedRoute>
           }
         />
@@ -65,6 +69,38 @@ export const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['FARMER']}>
               <FarmerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="farmer/products"
+          element={
+            <ProtectedRoute allowedRoles={['FARMER']}>
+              <FarmerProductList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="farmer/products/add"
+          element={
+            <ProtectedRoute allowedRoles={['FARMER']}>
+              <AddProductPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="farmer/products/edit/:id"
+          element={
+            <ProtectedRoute allowedRoles={['FARMER']}>
+              <EditProductPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="farmer/profile"
+          element={
+            <ProtectedRoute allowedRoles={['FARMER']}>
+              <FarmerProfilePage />
             </ProtectedRoute>
           }
         />
