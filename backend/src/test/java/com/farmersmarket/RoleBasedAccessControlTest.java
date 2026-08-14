@@ -30,6 +30,15 @@ class RoleBasedAccessControlTest {
     private UserRepository userRepository;
 
     @Autowired
+    private com.farmersmarket.repository.FarmerProfileRepository farmerProfileRepository;
+
+    @Autowired
+    private com.farmersmarket.repository.ProductRepository productRepository;
+
+    @Autowired
+    private com.farmersmarket.repository.InventoryRepository inventoryRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -41,6 +50,9 @@ class RoleBasedAccessControlTest {
 
     @BeforeEach
     void setUp() {
+        inventoryRepository.deleteAll();
+        productRepository.deleteAll();
+        farmerProfileRepository.deleteAll();
         userRepository.deleteAll();
 
         // 1. Create Customer
