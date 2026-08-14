@@ -75,7 +75,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
-                .requestMatchers("/api/auth/**", "/api/health", "/actuator/**", "/h2-console/**").permitAll()
+                .requestMatchers("/api/auth/**", "/api/categories/**", "/api/products/**", "/api/health", "/actuator/**", "/h2-console/**").permitAll()
                 // Role-protected test and functional endpoints
                 .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
                 .requestMatchers("/api/farmer/**").hasRole("FARMER")

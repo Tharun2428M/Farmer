@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
-  Sprout, 
   ShoppingBag, 
   Tractor, 
   ArrowRight, 
@@ -18,22 +17,55 @@ import SearchBar from '../../components/common/SearchBar';
 import Button from '../../components/common/Button';
 import ProductCard from '../../components/product/ProductCard';
 import CategoryCard from '../../components/category/CategoryCard';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_FARMERS, MOCK_STATS } from '../../utils/mockData';
+import productService from '../../services/productService';
+import { MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_STATS } from '../../utils/mockData';
 
 export const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const loadHomeData = async () => {
+      setLoading(true);
+      try {
+        const [prodData, catData] = await Promise.allSettled([
+          productService.getPublicProducts({ size: 8, sort: 'newest' }),
+          productService.getCategories()
+        ]);
+
+        if (prodData.status === 'fulfilled' && prodData.value?.content?.length > 0) {
+          setFeaturedProducts(prodData.value.content);
+        } else {
+          setFeaturedProducts(MOCK_PRODUCTS.slice(0, 8));
+        }
+
+        if (catData.status === 'fulfilled' && catData.value?.length > 0) {
+          setCategories(catData.value.slice(0, 6));
+        } else {
+          setCategories(MOCK_CATEGORIES.slice(0, 6));
+        }
+      } catch (err) {
+        console.error('Home data load fallback:', err);
+        setFeaturedProducts(MOCK_PRODUCTS.slice(0, 8));
+        setCategories(MOCK_CATEGORIES.slice(0, 6));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHomeData();
+  }, []);
+
   const handleSearchSubmit = (query) => {
-    if (query.trim()) {
-      navigate(`/products?search=${encodeURIComponent(query.trim())}`);
+    if (query && query.trim()) {
+      navigate(`/products?keyword=${encodeURIComponent(query.trim())}`);
     } else {
       navigate('/products');
     }
   };
-
-  const featuredProducts = MOCK_PRODUCTS.filter(p => p.featured).slice(0, 8);
-  const displayCategories = MOCK_CATEGORIES.slice(0, 6);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
@@ -180,15 +212,15 @@ export const Home = () => {
           </div>
 
           <div className="grid-categories">
-            {displayCategories.map((category) => (
+            {categories.map((category) => (
               <CategoryCard key={category.id} category={category} />
             ))}
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-            <Link to="/categories">
+            <Link to="/products">
               <Button variant="outline" icon={<ArrowRight size={16} />} iconPosition="right">
-                View All 8 Categories
+                View All Produce
               </Button>
             </Link>
           </div>
@@ -320,7 +352,7 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* 5. WHY BUY DIRECT & WHY FARMERS JOIN (DUAL HIGHLIGHT) */}
+      {/* 5. WHY BUY DIRECT & WHY FARMERS JOIN */}
       <section className="section-padding" style={{ backgroundColor: 'var(--primary-50)' }}>
         <div className="container">
           <div style={{
