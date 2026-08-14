@@ -1,27 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Sprout, 
-  ShoppingBag, 
+  ShoppingCart, 
   Heart, 
   User, 
   Menu, 
   X, 
-  LogIn,
-  UserPlus,
-  LogOut,
-  LayoutDashboard,
-  Tractor,
-  Shield
+  LogIn, 
+  UserPlus, 
+  LogOut, 
+  LayoutDashboard, 
+  Tractor, 
+  Shield,
+  Bell,
+  Package
 } from 'lucide-react';
 import Button from '../common/Button';
 import useAuth from '../../hooks/useAuth';
+import { useCart } from '../../context/CartContext';
+import notificationService from '../../services/notificationService';
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const { user, role, isAuthenticated, logout } = useAuth();
+  const { totalQuantity, wishlistCount } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUnreadCount();
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    } else {
+      setUnreadCount(0);
+    }
+  }, [isAuthenticated, location.pathname]);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await notificationService.getUnreadCount();
+      setUnreadCount(res.unreadCount || 0);
+    } catch (err) {
+      // Quietly fail for guest/expired token
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -39,7 +64,11 @@ export const Navbar = () => {
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/products', label: 'Produce Catalog' },
-    ...(role === 'FARMER' ? [{ path: '/farmer/products', label: '🌾 My Produce' }] : []),
+    ...(role === 'CUSTOMER' ? [{ path: '/customer/orders', label: '📦 My Orders' }] : []),
+    ...(role === 'FARMER' ? [
+      { path: '/farmer/products', label: '🌾 My Produce' },
+      { path: '/farmer/orders', label: '📦 Farm Orders' }
+    ] : []),
     { path: '/categories', label: 'Categories' },
     { path: '/about', label: 'Our Mission' },
     { path: '/contact', label: 'Contact & Support' }
@@ -137,12 +166,55 @@ export const Navbar = () => {
         {/* Header Right Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           
-          {/* Wishlist & Cart icons (Visible for Customers or Browsers) */}
+          {/* Notifications Icon (For any Authenticated User) */}
+          {isAuthenticated && (
+            <Link
+              to="/notifications"
+              title="Notifications"
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '38px',
+                height: '38px',
+                borderRadius: 'var(--radius-full)',
+                color: 'var(--text-body)',
+                backgroundColor: 'var(--bg-surface-subtle)',
+                border: '1px solid var(--border-light)'
+              }}
+            >
+              <Bell size={18} />
+              {unreadCount > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-4px',
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  fontSize: '0.65rem',
+                  fontWeight: '800',
+                  minWidth: '18px',
+                  height: '18px',
+                  borderRadius: 'var(--radius-full)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0 4px'
+                }}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Link>
+          )}
+
+          {/* Wishlist & Cart icons (Visible for Customers or Visitors) */}
           {(!role || role === 'CUSTOMER') && (
-            <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              {/* Wishlist Icon with count badge */}
               <Link
-                to="/products"
-                title="Wishlist"
+                to={isAuthenticated && role === 'CUSTOMER' ? '/customer/wishlist' : '/login'}
+                title="Saved Wishlist"
                 style={{
                   position: 'relative',
                   display: 'flex',
@@ -157,10 +229,31 @@ export const Navbar = () => {
                 }}
               >
                 <Heart size={18} />
+                {wishlistCount > 0 && role === 'CUSTOMER' && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    backgroundColor: '#e11d48',
+                    color: 'white',
+                    fontSize: '0.65rem',
+                    fontWeight: '800',
+                    minWidth: '18px',
+                    height: '18px',
+                    borderRadius: 'var(--radius-full)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0 4px'
+                  }}>
+                    {wishlistCount}
+                  </span>
+                )}
               </Link>
 
+              {/* Cart Icon with quantity badge */}
               <Link
-                to="/products"
+                to={isAuthenticated && role === 'CUSTOMER' ? '/customer/cart' : '/login'}
                 title="Shopping Cart"
                 style={{
                   position: 'relative',
@@ -175,9 +268,29 @@ export const Navbar = () => {
                   border: '1px solid var(--border-light)'
                 }}
               >
-                <ShoppingBag size={18} />
+                <ShoppingCart size={18} />
+                {totalQuantity > 0 && role === 'CUSTOMER' && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    backgroundColor: 'var(--primary-700)',
+                    color: 'white',
+                    fontSize: '0.65rem',
+                    fontWeight: '800',
+                    minWidth: '18px',
+                    height: '18px',
+                    borderRadius: 'var(--radius-full)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0 4px'
+                  }}>
+                    {totalQuantity}
+                  </span>
+                )}
               </Link>
-            </>
+            </div>
           )}
 
           {/* Desktop Auth State: Logged In vs Logged Out */}
@@ -291,6 +404,46 @@ export const Navbar = () => {
               {link.label}
             </Link>
           ))}
+
+          {isAuthenticated && (
+            <Link
+              to="/notifications"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                padding: '0.65rem 0.5rem',
+                fontWeight: '600',
+                color: 'var(--text-main)',
+                borderBottom: '1px solid var(--border-subtle)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Bell size={16} /> Notifications
+              </span>
+              {unreadCount > 0 && (
+                <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                  {unreadCount}
+                </span>
+              )}
+            </Link>
+          )}
+
+          {role === 'CUSTOMER' && (
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <Link to="/customer/cart" style={{ flex: 1 }} onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" fullWidth size="sm" icon={<ShoppingCart size={15} />}>
+                  Cart ({totalQuantity})
+                </Button>
+              </Link>
+              <Link to="/customer/wishlist" style={{ flex: 1 }} onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" fullWidth size="sm" icon={<Heart size={15} />}>
+                  Wishlist ({wishlistCount})
+                </Button>
+              </Link>
+            </div>
+          )}
 
           {isAuthenticated && user ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>

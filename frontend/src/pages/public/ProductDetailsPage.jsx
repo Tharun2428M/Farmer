@@ -16,9 +16,16 @@ import {
   PackageCheck,
   PackageX,
   AlertCircle,
-  Star
+  Check,
+  LogIn,
+  Star,
+  MessageSquarePlus,
+  Loader2
 } from 'lucide-react';
 import productService from '../../services/productService';
+import reviewService from '../../services/reviewService';
+import useAuth from '../../hooks/useAuth';
+import { useCart } from '../../context/CartContext';
 import Rating from '../../components/common/Rating';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -27,20 +34,38 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 export const ProductDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useCart();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [phase9Alert, setPhase9Alert] = useState(false);
+
+  const [cartSuccess, setCartSuccess] = useState(false);
+  const [actionError, setActionError] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+
+  // Reviews State
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [newRating, setNewRating] = useState(5);
+  const [newComment, setNewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState('');
+  const [reviewSuccess, setReviewSuccess] = useState('');
+
+  const isCustomer = isAuthenticated && user?.role === 'CUSTOMER';
+  const wishlisted = product ? isInWishlist(product.id) : false;
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProductAndReviews = async () => {
       setLoading(true);
       setError('');
       try {
         const data = await productService.getPublicProductById(id);
         setProduct(data);
+        loadReviews(id);
       } catch (err) {
         console.error('Failed to load product details:', err);
         if (err.response?.status === 404) {
@@ -54,13 +79,102 @@ export const ProductDetailsPage = () => {
     };
 
     if (id) {
-      fetchProduct();
+      fetchProductAndReviews();
     }
   }, [id]);
 
-  const handleCartClick = () => {
-    setPhase9Alert(true);
-    setTimeout(() => setPhase9Alert(false), 3500);
+  const loadReviews = async (productId) => {
+    try {
+      setReviewsLoading(true);
+      const revList = await reviewService.getProductReviews(productId);
+      setReviews(revList);
+    } catch (err) {
+      console.error('Failed to load product reviews:', err);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    setActionError('');
+    setCartSuccess(false);
+
+    if (!isAuthenticated) {
+      setActionError('Please login to add fresh farm produce to your cart.');
+      return;
+    }
+    if (user?.role !== 'CUSTOMER') {
+      setActionError('Only customer accounts can purchase crops. Please log in with a customer account.');
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      await addToCart(product.id, quantity);
+      setCartSuccess(true);
+      setTimeout(() => setCartSuccess(false), 4000);
+    } catch (err) {
+      setActionError(err.response?.data?.message || err.message || 'Failed to add to cart.');
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const handleToggleWishlist = async () => {
+    setActionError('');
+
+    if (!isAuthenticated) {
+      setActionError('Please login to save produce to your wishlist.');
+      return;
+    }
+    if (user?.role !== 'CUSTOMER') {
+      setActionError('Only customer accounts can save to wishlist.');
+      return;
+    }
+
+    try {
+      if (wishlisted) {
+        await removeFromWishlist(product.id);
+      } else {
+        await addToWishlist(product.id);
+      }
+    } catch (err) {
+      setActionError(err.response?.data?.message || err.message || 'Failed to update wishlist.');
+    }
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      setReviewError('Please log in to review this crop.');
+      return;
+    }
+    if (user?.role !== 'CUSTOMER') {
+      setReviewError('Only customers with delivered orders can submit a review.');
+      return;
+    }
+
+    try {
+      setReviewSubmitting(true);
+      setReviewError('');
+      setReviewSuccess('');
+
+      await reviewService.createReview(product.id, {
+        rating: newRating,
+        comment: newComment
+      });
+
+      setReviewSuccess('Thank you! Your verified farm review was published.');
+      setNewComment('');
+      setNewRating(5);
+      await loadReviews(product.id);
+    } catch (err) {
+      console.error('Failed to submit review:', err);
+      const msg = err.response?.data?.message || 'Only verified purchasers with a delivered order can submit a review.';
+      setReviewError(msg);
+    } finally {
+      setReviewSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -103,7 +217,11 @@ export const ProductDetailsPage = () => {
 
   const farmer = product.farmer || {};
   const category = product.category || {};
-  const rating = farmer.rating ? Number(farmer.rating) : 4.9;
+
+  // Compute live rating from reviews if available, otherwise use default
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : (farmer.rating ? Number(farmer.rating) : 5.0);
 
   return (
     <div style={{ backgroundColor: 'var(--bg-app)', paddingBottom: '6rem' }}>
@@ -262,9 +380,9 @@ export const ProductDetailsPage = () => {
 
               {/* Rating */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                <Rating value={rating} count={28} size={18} />
+                <Rating value={avgRating} count={reviews.length} size={18} />
                 <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                  ({rating.toFixed(1)} farmer rating)
+                  ({avgRating.toFixed(1)} / 5 • {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
                 </span>
               </div>
 
@@ -306,23 +424,54 @@ export const ProductDetailsPage = () => {
 
             {/* Quantity Selector & Action Buttons */}
             <div>
-              {/* Phase 9 Feature Alert Notification */}
-              {phase9Alert && (
+              {/* Feedback Alerts */}
+              {cartSuccess && (
                 <div style={{
                   padding: '0.75rem 1rem',
-                  backgroundColor: '#fef3c7',
-                  border: '1px solid #fde68a',
+                  backgroundColor: '#dcfce7',
+                  border: '1px solid #bbf7d0',
                   borderRadius: 'var(--radius-lg)',
-                  color: '#92400e',
+                  color: '#166534',
                   fontSize: '0.875rem',
                   fontWeight: '600',
                   marginBottom: '1rem',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  justifyContent: 'space-between'
                 }}>
-                  <Info size={16} />
-                  <span>Cart & Order Checkout will be unlocked in Phase 9!</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Check size={16} />
+                    <span>Added {quantity} {product.unit} of "{product.title}" to your cart!</span>
+                  </div>
+                  <Link to="/customer/cart" style={{ color: '#166534', textDecoration: 'underline', fontWeight: '700' }}>
+                    View Cart
+                  </Link>
+                </div>
+              )}
+
+              {actionError && (
+                <div style={{
+                  padding: '0.75rem 1rem',
+                  backgroundColor: '#fff1f2',
+                  border: '1px solid #fecdd3',
+                  borderRadius: 'var(--radius-lg)',
+                  color: '#be123c',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <AlertCircle size={16} />
+                    <span>{actionError}</span>
+                  </div>
+                  {!isAuthenticated && (
+                    <Link to="/login" style={{ color: '#be123c', textDecoration: 'underline', fontWeight: '700' }}>
+                      Login Now
+                    </Link>
+                  )}
                 </div>
               )}
 
@@ -391,21 +540,22 @@ export const ProductDetailsPage = () => {
                 <Button
                   variant="primary"
                   size="lg"
-                  disabled={isOutOfStock}
-                  onClick={handleCartClick}
-                  icon={<ShoppingCart size={20} />}
-                  style={{ flex: '1 1 220px', opacity: isOutOfStock ? 0.6 : 1 }}
+                  disabled={isOutOfStock || isAdding}
+                  onClick={handleAddToCart}
+                  icon={cartSuccess ? <Check size={20} /> : <ShoppingCart size={20} />}
+                  style={{ flex: '1 1 220px', backgroundColor: cartSuccess ? '#15803d' : 'var(--primary-800)', opacity: isOutOfStock ? 0.6 : 1 }}
                 >
-                  {isOutOfStock ? 'Currently Out of Stock' : 'Add to Cart (Phase 9)'}
+                  {isOutOfStock ? 'Currently Out of Stock' : isAdding ? 'Adding to Cart...' : 'Add to Cart'}
                 </Button>
 
                 <Button
-                  variant="outline"
+                  variant={wishlisted ? 'primary' : 'outline'}
                   size="lg"
-                  onClick={handleCartClick}
-                  icon={<Heart size={20} />}
+                  onClick={handleToggleWishlist}
+                  icon={<Heart size={20} fill={wishlisted ? 'currentColor' : 'none'} />}
+                  style={{ borderColor: wishlisted ? 'var(--primary-800)' : 'var(--border-light)' }}
                 >
-                  Wishlist (Phase 9)
+                  {wishlisted ? 'Saved in Wishlist' : 'Add to Wishlist'}
                 </Button>
               </div>
             </div>
@@ -460,40 +610,167 @@ export const ProductDetailsPage = () => {
           </div>
         )}
 
-        {/* 3. CUSTOMER FEEDBACK PLACEHOLDER */}
+        {/* 3. CUSTOMER RATINGS & REVIEWS SECTION */}
         <div className="card" style={{
           padding: '2.5rem',
           backgroundColor: 'var(--bg-surface)',
           borderRadius: 'var(--radius-2xl)',
           border: '1px solid var(--border-light)'
         }}>
+          {/* Header */}
           <div style={{
             display: 'flex',
+            flexWrap: 'wrap',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '1.5rem',
-            paddingBottom: '1rem',
+            gap: '1rem',
+            marginBottom: '2rem',
+            paddingBottom: '1.5rem',
             borderBottom: '1px solid var(--border-light)'
           }}>
             <div>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary-900)' }}>
-                Customer Ratings & Reviews
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--primary-900)' }}>
+                Customer Ratings & Verified Reviews
               </h2>
               <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                Direct consumer feedback verified upon order completion
+                Direct consumer feedback verified upon delivered farm orders
               </p>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--primary-900)' }}>{rating.toFixed(1)}</span>
-              <Rating value={rating} showNumeric={false} size={16} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--primary-900)' }}>
+                  {avgRating.toFixed(1)}
+                </span>
+                <Rating value={avgRating} showNumeric={false} size={18} />
+              </div>
             </div>
           </div>
 
-          <div style={{ padding: '1.5rem', backgroundColor: 'var(--bg-surface-subtle)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-              Verified order reviews and customer ratings will be activated with consumer orders in subsequent phases.
+          {/* Write a Review Section (For Customers) */}
+          <div className="bg-emerald-50/40 rounded-2xl p-6 border border-emerald-100 mb-8">
+            <h3 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+              <MessageSquarePlus className="w-5 h-5 text-emerald-600" />
+              Write a Verified Customer Review
+            </h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Share your feedback on the freshness, taste, and quality of this harvest. (Requires delivered purchase)
             </p>
+
+            {reviewSuccess && (
+              <div className="mb-4 p-3 bg-emerald-100 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                <span>{reviewSuccess}</span>
+              </div>
+            )}
+
+            {reviewError && (
+              <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{reviewError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitReview} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                  Your Rating (1 to 5 Stars)
+                </label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setNewRating(star)}
+                      className="p-1 text-amber-400 hover:scale-110 transition"
+                    >
+                      <Star
+                        className={`w-6 h-6 ${
+                          star <= newRating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                  <span className="text-xs font-bold text-gray-600 ml-2">{newRating} Stars</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                  Your Review / Experience
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="How was the produce quality, aroma, taste, and packaging?"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={reviewSubmitting}
+                className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-2"
+              >
+                {reviewSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                Submit Verified Review
+              </button>
+            </form>
           </div>
+
+          {/* Reviews List */}
+          {reviewsLoading ? (
+            <div className="text-center py-8">
+              <Loader2 className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-2" />
+              <p className="text-xs text-gray-500">Loading reviews...</p>
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="p-8 bg-gray-50 rounded-xl text-center">
+              <p className="text-sm text-gray-500">
+                No customer reviews yet for this harvest. Be the first verified customer to leave a review!
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((rev) => (
+                <div
+                  key={rev.id}
+                  className="p-4 rounded-xl border border-gray-100 bg-white shadow-xs"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
+                        {rev.customerName?.charAt(0) || 'C'}
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-gray-900">{rev.customerName}</span>
+                        <span className="ml-2 text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+                          Verified Buyer
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {new Date(rev.createdAt).toLocaleDateString('en-IN')}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1 mb-1">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star
+                        key={s}
+                        className={`w-3.5 h-3.5 ${
+                          s <= rev.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-gray-700 mt-1">{rev.comment}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
       </div>

@@ -12,11 +12,19 @@ import UnauthorizedPage from '../pages/public/UnauthorizedPage';
 import Login from '../pages/auth/Login';
 import Signup from '../pages/auth/Signup';
 import CustomerDashboard from '../pages/customer/CustomerDashboard';
+import CartPage from '../pages/customer/CartPage';
+import WishlistPage from '../pages/customer/WishlistPage';
+import CheckoutPage from '../pages/customer/CheckoutPage';
+import OrderSuccessPage from '../pages/customer/OrderSuccessPage';
+import CustomerOrdersPage from '../pages/customer/CustomerOrdersPage';
+import CustomerOrderDetailPage from '../pages/customer/CustomerOrderDetailPage';
 import FarmerDashboard from '../pages/farmer/FarmerDashboard';
 import FarmerProductList from '../pages/farmer/FarmerProductList';
 import AddProductPage from '../pages/farmer/AddProductPage';
 import EditProductPage from '../pages/farmer/EditProductPage';
 import FarmerProfilePage from '../pages/farmer/FarmerProfilePage';
+import FarmerOrdersPage from '../pages/farmer/FarmerOrdersPage';
+import NotificationsPage from '../pages/customer/NotificationsPage';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import ProtectedRoute from '../components/common/ProtectedRoute';
 
@@ -37,6 +45,16 @@ export const AppRoutes = () => {
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
 
+        {/* Authenticated Notifications Route (Available for all logged-in roles) */}
+        <Route
+          path="notifications"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER', 'FARMER', 'ADMIN']}>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Customer Protected Routes (CUSTOMER role only) */}
         <Route
           path="customer"
@@ -51,6 +69,54 @@ export const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['CUSTOMER']}>
               <CustomerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="customer/cart"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CartPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="customer/wishlist"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <WishlistPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="customer/checkout"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="customer/order-success/:id"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <OrderSuccessPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="customer/orders"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CustomerOrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="customer/orders/:id"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CustomerOrderDetailPage />
             </ProtectedRoute>
           }
         />
@@ -101,6 +167,14 @@ export const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['FARMER']}>
               <FarmerProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="farmer/orders"
+          element={
+            <ProtectedRoute allowedRoles={['FARMER']}>
+              <FarmerOrdersPage />
             </ProtectedRoute>
           }
         />
