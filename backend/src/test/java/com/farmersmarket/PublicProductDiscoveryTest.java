@@ -64,6 +64,39 @@ class PublicProductDiscoveryTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired(required = false)
+    private com.farmersmarket.repository.ReviewRepository reviewRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.OrderItemRepository orderItemRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.PaymentRepository paymentRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.DeliveryRepository deliveryRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.OrderRepository orderRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.CartItemRepository cartItemRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.CartRepository cartRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.WishlistRepository wishlistRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.NotificationRepository notificationRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.AddressRepository addressRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.CustomerProfileRepository customerProfileRepository;
+
     private Category vegCategory;
     private Category fruitCategory;
 
@@ -110,6 +143,17 @@ class PublicProductDiscoveryTest {
     }
 
     private void cleanDatabase() {
+        if (reviewRepository != null) reviewRepository.deleteAll();
+        if (orderItemRepository != null) orderItemRepository.deleteAll();
+        if (paymentRepository != null) paymentRepository.deleteAll();
+        if (deliveryRepository != null) deliveryRepository.deleteAll();
+        if (orderRepository != null) orderRepository.deleteAll();
+        if (wishlistRepository != null) wishlistRepository.deleteAll();
+        if (cartItemRepository != null) cartItemRepository.deleteAll();
+        if (cartRepository != null) cartRepository.deleteAll();
+        if (notificationRepository != null) notificationRepository.deleteAll();
+        if (addressRepository != null) addressRepository.deleteAll();
+        if (customerProfileRepository != null) customerProfileRepository.deleteAll();
         inventoryRepository.deleteAll();
         productRepository.deleteAll();
         farmerProfileRepository.deleteAll();
