@@ -33,14 +33,50 @@ class AuthControllerTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
+    @Autowired(required = false)
+    private com.farmersmarket.repository.NotificationRepository notificationRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.ReviewRepository reviewRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.OrderItemRepository orderItemRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.DeliveryRepository deliveryRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.PaymentRepository paymentRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.OrderRepository orderRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.WishlistRepository wishlistRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.CartItemRepository cartItemRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.CartRepository cartRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.AddressRepository addressRepository;
+
+    @Autowired(required = false)
     private com.farmersmarket.repository.FarmerProfileRepository farmerProfileRepository;
 
-    @Autowired
+    @Autowired(required = false)
+    private com.farmersmarket.repository.CustomerProfileRepository customerProfileRepository;
+
+    @Autowired(required = false)
     private com.farmersmarket.repository.ProductRepository productRepository;
 
-    @Autowired
+    @Autowired(required = false)
     private com.farmersmarket.repository.InventoryRepository inventoryRepository;
+
+    @Autowired(required = false)
+    private com.farmersmarket.repository.CategoryRepository categoryRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -50,10 +86,31 @@ class AuthControllerTest {
 
     @BeforeEach
     void setUp() {
-        inventoryRepository.deleteAll();
-        productRepository.deleteAll();
-        farmerProfileRepository.deleteAll();
-        userRepository.deleteAll();
+        cleanDatabase();
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void tearDown() {
+        cleanDatabase();
+    }
+
+    private void cleanDatabase() {
+        if (notificationRepository != null) notificationRepository.deleteAll();
+        if (reviewRepository != null) reviewRepository.deleteAll();
+        if (orderItemRepository != null) orderItemRepository.deleteAll();
+        if (deliveryRepository != null) deliveryRepository.deleteAll();
+        if (paymentRepository != null) paymentRepository.deleteAll();
+        if (orderRepository != null) orderRepository.deleteAll();
+        if (wishlistRepository != null) wishlistRepository.deleteAll();
+        if (cartItemRepository != null) cartItemRepository.deleteAll();
+        if (cartRepository != null) cartRepository.deleteAll();
+        if (addressRepository != null) addressRepository.deleteAll();
+        if (inventoryRepository != null) inventoryRepository.deleteAll();
+        if (productRepository != null) productRepository.deleteAll();
+        if (categoryRepository != null) categoryRepository.deleteAll();
+        if (customerProfileRepository != null) customerProfileRepository.deleteAll();
+        if (farmerProfileRepository != null) farmerProfileRepository.deleteAll();
+        if (userRepository != null) userRepository.deleteAll();
     }
 
     @Test
