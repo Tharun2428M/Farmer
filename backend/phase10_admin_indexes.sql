@@ -4,7 +4,9 @@
 -- Target Database: Supabase PostgreSQL
 -- Purpose: Accelerate query speeds for administrative dashboards, analytical time-series,
 --          user moderation, inventory threshold scans, and full-text search.
--- =====================================================================================
+-- Enable pg_trgm extension for trigram search and GIN indexes
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. Users Table Indexes
 CREATE INDEX IF NOT EXISTS idx_users_role_status ON users(role, status);
