@@ -34,9 +34,9 @@ DROP TABLE IF EXISTS public.users CASCADE;
 -- 1. BASE TABLES (No Foreign Keys pointing to other app tables)
 -- --------------------------------------------------------------------
 
--- Base app users referencing Supabase Auth users
+-- Base app users (Spring Boot JWT Auth)
 CREATE TABLE public.users (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
     role VARCHAR(50) NOT NULL CHECK (role IN ('CUSTOMER', 'FARMER', 'ADMIN')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,

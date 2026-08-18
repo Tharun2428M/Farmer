@@ -14,9 +14,8 @@ ALTER TABLE public.users
 ALTER TABLE public.users 
     ALTER COLUMN id SET DEFAULT gen_random_uuid();
 
--- 3. If foreign key to auth.users exists and standalone Spring Boot auth is desired,
--- you may optionally drop the foreign key constraint or maintain it:
--- ALTER TABLE public.users DROP CONSTRAINT IF EXISTS users_id_fkey;
+-- 3. Drop foreign key constraint pointing to auth.users for standalone Spring Boot JWT authentication
+ALTER TABLE public.users DROP CONSTRAINT IF EXISTS users_id_fkey;
 
 -- 4. Create performance indexes
 CREATE INDEX IF NOT EXISTS idx_users_email_status ON public.users(email, status);
