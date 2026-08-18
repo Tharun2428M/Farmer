@@ -57,7 +57,7 @@ export const Navbar = () => {
   const getDashboardPath = () => {
     if (role === 'CUSTOMER') return '/customer/dashboard';
     if (role === 'FARMER') return '/farmer/dashboard';
-    if (role === 'ADMIN') return '/admin/dashboard';
+    if (role === 'ADMIN') return '/admin';
     return '/';
   };
 
@@ -68,6 +68,10 @@ export const Navbar = () => {
     ...(role === 'FARMER' ? [
       { path: '/farmer/products', label: '🌾 My Produce' },
       { path: '/farmer/orders', label: '📦 Farm Orders' }
+    ] : []),
+    ...(role === 'ADMIN' ? [
+      { path: '/admin', label: '🛡️ Admin HQ' },
+      { path: '/admin/analytics', label: '📊 Analytics' }
     ] : []),
     { path: '/categories', label: 'Categories' },
     { path: '/about', label: 'Our Mission' },

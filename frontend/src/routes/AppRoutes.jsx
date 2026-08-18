@@ -25,12 +25,29 @@ import EditProductPage from '../pages/farmer/EditProductPage';
 import FarmerProfilePage from '../pages/farmer/FarmerProfilePage';
 import FarmerOrdersPage from '../pages/farmer/FarmerOrdersPage';
 import NotificationsPage from '../pages/customer/NotificationsPage';
+
+// Admin Components & Pages
+import AdminLayout from '../components/admin/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
+import AdminUsersPage from '../pages/admin/AdminUsersPage';
+import AdminFarmersPage from '../pages/admin/AdminFarmersPage';
+import AdminProductsPage from '../pages/admin/AdminProductsPage';
+import AdminCategoriesPage from '../pages/admin/AdminCategoriesPage';
+import AdminOrdersPage from '../pages/admin/AdminOrdersPage';
+import AdminPaymentsPage from '../pages/admin/AdminPaymentsPage';
+import AdminDeliveriesPage from '../pages/admin/AdminDeliveriesPage';
+import AdminReviewsPage from '../pages/admin/AdminReviewsPage';
+import AdminAnalyticsPage from '../pages/admin/AdminAnalyticsPage';
+import AdminReportsPage from '../pages/admin/AdminReportsPage';
+import AdminLowStockPage from '../pages/admin/AdminLowStockPage';
+import AdminSystemHealthPage from '../pages/admin/AdminSystemHealthPage';
+
 import ProtectedRoute from '../components/common/ProtectedRoute';
 
 export const AppRoutes = () => {
   return (
     <Routes>
+      {/* Main Public & Customer/Farmer Storefront Route Tree */}
       <Route path="/" element={<MainLayout />}>
         {/* Public Catalog & Marketing Routes */}
         <Route index element={<Home />} />
@@ -179,26 +196,33 @@ export const AppRoutes = () => {
           }
         />
 
-        {/* Admin Protected Routes (ADMIN role only) */}
-        <Route
-          path="admin"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <Navigate to="/admin/dashboard" replace />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="admin/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* 404 Catch-All */}
+        {/* 404 Catch-All within MainLayout */}
         <Route path="*" element={<NotFoundPage />} />
+      </Route>
+
+      {/* Admin Module Routes — Dedicated AdminLayout and Protected with ADMIN role */}
+      <Route
+        path="admin"
+        element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="dashboard" element={<Navigate to="/admin" replace />} />
+        <Route path="analytics" element={<AdminAnalyticsPage />} />
+        <Route path="reports" element={<AdminReportsPage />} />
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="farmers" element={<AdminFarmersPage />} />
+        <Route path="products" element={<AdminProductsPage />} />
+        <Route path="categories" element={<AdminCategoriesPage />} />
+        <Route path="orders" element={<AdminOrdersPage />} />
+        <Route path="payments" element={<AdminPaymentsPage />} />
+        <Route path="deliveries" element={<AdminDeliveriesPage />} />
+        <Route path="reviews" element={<AdminReviewsPage />} />
+        <Route path="low-stock" element={<AdminLowStockPage />} />
+        <Route path="system" element={<AdminSystemHealthPage />} />
       </Route>
     </Routes>
   );
