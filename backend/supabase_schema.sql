@@ -37,8 +37,12 @@ DROP TABLE IF EXISTS public.users CASCADE;
 -- Base app users (Spring Boot JWT Auth)
 CREATE TABLE public.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255),
     email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255),
+    phone VARCHAR(50),
     role VARCHAR(50) NOT NULL CHECK (role IN ('CUSTOMER', 'FARMER', 'ADMIN')),
+    status VARCHAR(50) DEFAULT 'ACTIVE' NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -329,14 +333,25 @@ INSERT INTO public.categories (id, name, description, icon_name) VALUES
 (5, 'Grains & Pulses', 'Organic millets, rice, and farm wheats', 'Wheat')
 ON CONFLICT (id) DO NOTHING;
 
--- Seed Mock Auth Users (For testing database connections without web UI signup)
--- These inserts populate public.users and profiles via triggers
-INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-VALUES
-('f0000000-0000-0000-0000-000000000001', 'farmer.ramesh@farmersmarket.local', 'mock_encrypted_password', now(), '{"provider":"email","providers":["email"]}', '{"role":"FARMER","full_name":"Ramesh Patil","farm_name":"Patil Organic Farm","farm_address":"Agri Zone Sector 3, Pune"}', 'authenticated', 'authenticated'),
-('f0000000-0000-0000-0000-000000000002', 'farmer.suresh@farmersmarket.local', 'mock_encrypted_password', now(), '{"provider":"email","providers":["email"]}', '{"role":"FARMER","full_name":"Suresh Kumar","farm_name":"Suresh Fresh Produce","farm_address":"Village Farm Outlet, Nashik"}', 'authenticated', 'authenticated'),
-('c0000000-0000-0000-0000-000000000001', 'customer.anil@farmersmarket.local', 'mock_encrypted_password', now(), '{"provider":"email","providers":["email"]}', '{"role":"CUSTOMER","full_name":"Anil Sharma"}', 'authenticated', 'authenticated'),
-('c0000000-0000-0000-0000-000000000002', 'customer.priya@farmersmarket.local', 'mock_encrypted_password', now(), '{"provider":"email","providers":["email"]}', '{"role":"CUSTOMER","full_name":"Priya Nair"}', 'authenticated', 'authenticated')
+-- Seed Users (Spring Boot JWT Auth BCrypt password hashes for 'Password123!')
+INSERT INTO public.users (id, name, email, password, phone, role, status) VALUES
+('f0000000-0000-0000-0000-000000000001', 'Ramesh Patil', 'farmer.ramesh@farmersmarket.local', '$2a$10$wT1r531q144zMvB7W2pSXeU2a4eYc6Z1Q/vJ5B2QhXj5Vq0p7vW5K', '+91 9876543210', 'FARMER', 'ACTIVE'),
+('f0000000-0000-0000-0000-000000000002', 'Suresh Kumar', 'farmer.suresh@farmersmarket.local', '$2a$10$wT1r531q144zMvB7W2pSXeU2a4eYc6Z1Q/vJ5B2QhXj5Vq0p7vW5K', '+91 9876543211', 'FARMER', 'ACTIVE'),
+('c0000000-0000-0000-0000-000000000001', 'Anil Sharma', 'customer.anil@farmersmarket.local', '$2a$10$wT1r531q144zMvB7W2pSXeU2a4eYc6Z1Q/vJ5B2QhXj5Vq0p7vW5K', '+91 9876543212', 'CUSTOMER', 'ACTIVE'),
+('c0000000-0000-0000-0000-000000000002', 'Priya Nair', 'customer.priya@farmersmarket.local', '$2a$10$wT1r531q144zMvB7W2pSXeU2a4eYc6Z1Q/vJ5B2QhXj5Vq0p7vW5K', '+91 9876543213', 'CUSTOMER', 'ACTIVE'),
+('a0000000-0000-0000-0000-000000000000', 'Platform Administrator', 'admin@farmersmarket.local', '$2a$12$eImiTXuWVxfM37uY4JANjOL.PtkV4i9G2qX3y79e3W4vN1B0r7GvW', '+91-9999999999', 'ADMIN', 'ACTIVE')
+ON CONFLICT (email) DO NOTHING;
+
+-- Seed Farmer Profiles
+INSERT INTO public.farmer_profiles (id, farm_name, farm_description, farm_address, rating) VALUES
+('f0000000-0000-0000-0000-000000000001', 'Patil Organic Farm', 'Specializing in fresh organic tomatoes and root vegetables.', 'Agri Zone Sector 3, Pune', 4.8),
+('f0000000-0000-0000-0000-000000000002', 'Suresh Fresh Produce', 'Family run orchard farm supplying fresh local produce.', 'Village Farm Outlet, Nashik', 4.9)
+ON CONFLICT (id) DO NOTHING;
+
+-- Seed Customer Profiles
+INSERT INTO public.customer_profiles (id, full_name, phone_number) VALUES
+('c0000000-0000-0000-0000-000000000001', 'Anil Sharma', '+91 9876543212'),
+('c0000000-0000-0000-0000-000000000002', 'Priya Nair', '+91 9876543213')
 ON CONFLICT (id) DO NOTHING;
 
 -- Seed Sample Addresses
