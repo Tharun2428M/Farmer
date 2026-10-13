@@ -26,8 +26,11 @@ public class CategoryPing {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "icon_name", length = 100)
-    private String iconName;
+    @Column(name = "icon", length = 100)
+    private String icon;
+
+    @Column(name = "is_active")
+    private Boolean isActive;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -47,8 +50,12 @@ public class CategoryPing {
         return description;
     }
 
-    public String getIconName() {
-        return iconName;
+    public String getIcon() {
+        return icon;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
     }
 
     public OffsetDateTime getCreatedAt() {

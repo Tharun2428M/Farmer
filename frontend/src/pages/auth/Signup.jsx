@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Phone, Eye, EyeOff, AlertCircle, Sprout, Store, Truck, ArrowLeft } from 'lucide-react';
+import { Sprout, UserPlus, ShoppingBag, Tractor, AlertCircle, ShieldAlert } from 'lucide-react';
+import Input from '../../components/common/Input';
+import Button from '../../components/common/Button';
 import useAuth from '../../hooks/useAuth';
 
 export const Signup = () => {
   const navigate = useNavigate();
   const { register, isAuthenticated, user } = useAuth();
   
-  // Account type state: 'CUSTOMER', 'FARMER', or 'TRANSPORTER' (mapped to backend role)
-  const [selectedRole, setSelectedRole] = useState('FARMER');
+  // Account type state: strictly 'CUSTOMER' or 'FARMER' (ADMIN is prohibited)
+  const [role, setRole] = useState('CUSTOMER');
   
   const [formData, setFormData] = useState({
     fullName: '',
@@ -18,8 +20,6 @@ export const Signup = () => {
     confirmPassword: ''
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -78,8 +78,8 @@ export const Signup = () => {
 
     setLoading(true);
     try {
-      // Map selected UI role to backend allowed role (FARMER or CUSTOMER)
-      const registeredRole = selectedRole === 'FARMER' ? 'FARMER' : 'CUSTOMER';
+      // Security: Strictly enforce CUSTOMER or FARMER payload
+      const registeredRole = role === 'FARMER' ? 'FARMER' : 'CUSTOMER';
 
       const response = await register({
         name: formData.fullName,
@@ -99,6 +99,7 @@ export const Signup = () => {
       if (err.status === 409) {
         setServerError('An account with this email already exists. Please login instead.');
       } else if (err.data && typeof err.data === 'object') {
+        // Backend validation errors from MethodArgumentNotValidException
         setErrors(err.data);
         setServerError('Please correct the highlighted form errors.');
       } else {
@@ -110,109 +111,53 @@ export const Signup = () => {
   };
 
   return (
-    <div className="auth-page-wrapper">
-      {/* Return to Home / Storefront Link */}
-      <Link
-        to="/"
-        className="auth-back-link"
-        style={{
-          position: 'absolute',
-          top: '1.25rem',
-          left: '1.25rem',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.45rem',
-          color: '#1b4332',
-          backgroundColor: 'rgba(255, 255, 255, 0.92)',
-          backdropFilter: 'blur(8px)',
-          padding: '0.5rem 1rem',
-          borderRadius: '9999px',
-          fontWeight: '700',
-          fontSize: '0.85rem',
-          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-          textDecoration: 'none',
-          zIndex: 10,
-          border: '1px solid rgba(0, 0, 0, 0.06)',
-          transition: 'all 0.2s ease'
-        }}
-      >
-        <ArrowLeft size={16} />
-        <span>Back to Store</span>
-      </Link>
-
-      <div className="auth-card-panel">
-        
-        {/* 3-Leaf Sprout Green Logo */}
-        <Link to="/" className="auth-logo-box" title="Return to FarmersMarket Home" style={{ textDecoration: 'none' }}>
-          <svg
-            className="auth-logo-svg"
-            viewBox="0 0 48 42"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-label="Farmers Marketplace Logo"
-          >
-            {/* Left Leaf */}
-            <path
-              d="M22 28C14 26 8 18 10 10C17 9 24 16 23 25"
-              fill="#52b788"
-            />
-            <path
-              d="M10 10C16 17 20 23 22 28"
-              stroke="#3a8b62"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            {/* Center Leaf */}
-            <path
-              d="M24 28C20 18 20 8 24 2C28 8 28 18 24 28Z"
-              fill="#40916c"
-            />
-            <path
-              d="M24 2V28"
-              stroke="#2d6a4f"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            {/* Right Leaf */}
-            <path
-              d="M26 28C34 26 40 18 38 10C31 9 24 16 25 25"
-              fill="#52b788"
-            />
-            <path
-              d="M38 10C32 17 28 23 26 28"
-              stroke="#3a8b62"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            {/* Base Stem */}
-            <path
-              d="M24 28V36"
-              stroke="#40916c"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </Link>
-
-        {/* Small Orange Pre-Heading */}
-        <p className="auth-pre-title">Create Account</p>
-
-        {/* Large White Heading */}
-        <h1 className="auth-main-title">Sign Up</h1>
-
-        {/* Subtitle */}
-        <p className="auth-subtitle-text">
-          Join our community and start your<br />fresh produce journey.
-        </p>
+    <div style={{
+      backgroundColor: 'var(--bg-app)',
+      minHeight: '85vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '3.5rem 1.25rem'
+    }}>
+      <div className="card" style={{
+        width: '100%',
+        maxWidth: '520px',
+        padding: '2.5rem',
+        backgroundColor: 'var(--bg-surface)',
+        borderRadius: 'var(--radius-xl)',
+        boxShadow: 'var(--shadow-md)'
+      }}>
+        {/* Brand Icon Header */}
+        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--primary-800)',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 0.75rem auto'
+          }}>
+            <Sprout size={28} />
+          </div>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--primary-900)' }}>
+            Join the Marketplace
+          </h1>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+            Create an account to buy or sell fresh local harvest
+          </p>
+        </div>
 
         {/* Server Error Alert */}
         {serverError && (
           <div style={{
-            padding: '0.8rem 1rem',
+            padding: '0.85rem 1rem',
             backgroundColor: '#fee2e2',
             color: '#991b1b',
-            borderRadius: '8px',
-            marginBottom: '1.25rem',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '1.5rem',
             fontSize: '0.8125rem',
             display: 'flex',
             alignItems: 'center',
@@ -224,225 +169,171 @@ export const Signup = () => {
           </div>
         )}
 
+        {/* Account Role Selector Cards */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '0.85rem',
+          marginBottom: '1.5rem'
+        }}>
+          {/* Customer Choice */}
+          <div
+            onClick={() => !loading && setRole('CUSTOMER')}
+            style={{
+              padding: '1rem',
+              borderRadius: 'var(--radius-md)',
+              border: `2px solid ${role === 'CUSTOMER' ? 'var(--primary-700)' : 'var(--border-light)'}`,
+              backgroundColor: role === 'CUSTOMER' ? 'var(--primary-50)' : 'var(--bg-surface-subtle)',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              transition: 'all var(--transition-fast)'
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: role === 'CUSTOMER' ? 'var(--primary-100)' : '#e2e8f0',
+              color: role === 'CUSTOMER' ? 'var(--primary-800)' : 'var(--text-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '0.5rem'
+            }}>
+              <ShoppingBag size={18} />
+            </div>
+            <strong style={{ fontSize: '0.9375rem', color: 'var(--primary-900)' }}>Customer</strong>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Buy fresh produce</span>
+          </div>
+
+          {/* Farmer Choice */}
+          <div
+            onClick={() => !loading && setRole('FARMER')}
+            style={{
+              padding: '1rem',
+              borderRadius: 'var(--radius-md)',
+              border: `2px solid ${role === 'FARMER' ? 'var(--primary-700)' : 'var(--border-light)'}`,
+              backgroundColor: role === 'FARMER' ? 'var(--primary-50)' : 'var(--bg-surface-subtle)',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              transition: 'all var(--transition-fast)'
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: role === 'FARMER' ? '#fff3e0' : '#e2e8f0',
+              color: role === 'FARMER' ? '#e65100' : 'var(--text-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '0.5rem'
+            }}>
+              <Tractor size={18} />
+            </div>
+            <strong style={{ fontSize: '0.9375rem', color: 'var(--primary-900)' }}>Farmer</strong>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sell your harvest</span>
+          </div>
+        </div>
+
+        {/* Security Notice on ADMIN role */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.4rem',
+          fontSize: '0.75rem',
+          color: 'var(--text-muted)',
+          marginBottom: '1.5rem',
+          padding: '0.4rem 0.75rem',
+          backgroundColor: 'var(--bg-app)',
+          borderRadius: 'var(--radius-sm)'
+        }}>
+          <ShieldAlert size={14} color="var(--primary-600)" />
+          <span>System Rule: Admin accounts cannot be created via public registration.</span>
+        </div>
+
         {/* Signup Form */}
         <form onSubmit={handleSubmit} noValidate>
-          
-          {/* Full Name */}
-          <div className="auth-field-group">
-            <label htmlFor="signup-name" className="auth-field-label">
-              Full Name
-            </label>
-            <div className="auth-input-container">
-              <span className="auth-left-icon">
-                <User size={18} />
-              </span>
-              <input
-                id="signup-name"
-                type="text"
-                className={`auth-input-elem ${errors.fullName ? 'has-error' : ''}`}
-                placeholder="Enter your full name"
-                value={formData.fullName}
-                onChange={(e) => {
-                  setFormData({ ...formData, fullName: e.target.value });
-                  if (errors.fullName) setErrors({ ...errors, fullName: null });
-                }}
-                disabled={loading}
-                required
-              />
-            </div>
-            {errors.fullName && <span className="auth-error-msg">{errors.fullName}</span>}
-          </div>
-
-          {/* Role Selector: I am a */}
-          <div className="auth-field-group">
-            <label className="auth-field-label">
-              I am a
-            </label>
-            <div className="auth-role-selector-row">
-              <div
-                className={`auth-role-card ${selectedRole === 'FARMER' ? 'active' : ''}`}
-                onClick={() => !loading && setSelectedRole('FARMER')}
-              >
-                <div className="auth-role-card-inner">
-                  <Sprout size={16} color={selectedRole === 'FARMER' ? '#52b788' : '#88ab92'} />
-                  <span>Farmer</span>
-                </div>
-                <div className="auth-role-radio-circle" />
-              </div>
-
-              <div
-                className={`auth-role-card ${selectedRole === 'SELLER' ? 'active' : ''}`}
-                onClick={() => !loading && setSelectedRole('SELLER')}
-              >
-                <div className="auth-role-card-inner">
-                  <Store size={16} color={selectedRole === 'SELLER' ? '#52b788' : '#88ab92'} />
-                  <span>Seller</span>
-                </div>
-                <div className="auth-role-radio-circle" />
-              </div>
-
-              <div
-                className={`auth-role-card ${selectedRole === 'TRANSPORTER' ? 'active' : ''}`}
-                onClick={() => !loading && setSelectedRole('TRANSPORTER')}
-              >
-                <div className="auth-role-card-inner">
-                  <Truck size={16} color={selectedRole === 'TRANSPORTER' ? '#52b788' : '#88ab92'} />
-                  <span>Transporter</span>
-                </div>
-                <div className="auth-role-radio-circle" />
-              </div>
-            </div>
-          </div>
-
-          {/* Email Address */}
-          <div className="auth-field-group">
-            <label htmlFor="signup-email" className="auth-field-label">
-              Email Address
-            </label>
-            <div className="auth-input-container">
-              <span className="auth-left-icon">
-                <Mail size={18} />
-              </span>
-              <input
-                id="signup-email"
-                type="email"
-                className={`auth-input-elem ${errors.email ? 'has-error' : ''}`}
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={(e) => {
-                  setFormData({ ...formData, email: e.target.value });
-                  if (errors.email) setErrors({ ...errors, email: null });
-                }}
-                disabled={loading}
-                autoComplete="email"
-                required
-              />
-            </div>
-            {errors.email && <span className="auth-error-msg">{errors.email}</span>}
-          </div>
-
-          {/* Password */}
-          <div className="auth-field-group">
-            <label htmlFor="signup-password" className="auth-field-label">
-              Password
-            </label>
-            <div className="auth-input-container">
-              <span className="auth-left-icon">
-                <Lock size={18} />
-              </span>
-              <input
-                id="signup-password"
-                type={showPassword ? 'text' : 'password'}
-                className={`auth-input-elem ${errors.password ? 'has-error' : ''}`}
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={(e) => {
-                  setFormData({ ...formData, password: e.target.value });
-                  if (errors.password) setErrors({ ...errors, password: null });
-                }}
-                disabled={loading}
-                autoComplete="new-password"
-                required
-              />
-              <button
-                type="button"
-                className="auth-right-action-btn"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex="-1"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            {errors.password && <span className="auth-error-msg">{errors.password}</span>}
-          </div>
-
-          {/* Confirm Password */}
-          <div className="auth-field-group">
-            <label htmlFor="signup-confirm-password" className="auth-field-label">
-              Confirm Password
-            </label>
-            <div className="auth-input-container">
-              <span className="auth-left-icon">
-                <Lock size={18} />
-              </span>
-              <input
-                id="signup-confirm-password"
-                type={showConfirmPassword ? 'text' : 'password'}
-                className={`auth-input-elem ${errors.confirmPassword ? 'has-error' : ''}`}
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChange={(e) => {
-                  setFormData({ ...formData, confirmPassword: e.target.value });
-                  if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: null });
-                }}
-                disabled={loading}
-                autoComplete="new-password"
-                required
-              />
-              <button
-                type="button"
-                className="auth-right-action-btn"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                tabIndex="-1"
-                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-              >
-                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            {errors.confirmPassword && <span className="auth-error-msg">{errors.confirmPassword}</span>}
-          </div>
-
-          {/* Phone Number */}
-          <div className="auth-field-group">
-            <label htmlFor="signup-phone" className="auth-field-label">
-              Phone Number
-            </label>
-            <div className="auth-input-container">
-              <span className="auth-left-icon">
-                <Phone size={18} />
-              </span>
-              <input
-                id="signup-phone"
-                type="tel"
-                className={`auth-input-elem ${errors.phone ? 'has-error' : ''}`}
-                placeholder="Enter your phone number"
-                value={formData.phone}
-                onChange={(e) => {
-                  setFormData({ ...formData, phone: e.target.value });
-                  if (errors.phone) setErrors({ ...errors, phone: null });
-                }}
-                disabled={loading}
-                autoComplete="tel"
-                required
-              />
-            </div>
-            {errors.phone && <span className="auth-error-msg">{errors.phone}</span>}
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="auth-submit-btn"
+          <Input
+            label="Full Name"
+            value={formData.fullName}
+            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+            error={errors.fullName || errors.name}
+            placeholder="e.g. Ramesh Patil"
             disabled={loading}
-            id="signup-submit-button"
+            required
+          />
+
+          <Input
+            label="Email Address"
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            error={errors.email}
+            placeholder="e.g. ramesh@example.com"
+            disabled={loading}
+            required
+          />
+
+          <Input
+            label="Phone Number"
+            type="tel"
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            error={errors.phone}
+            placeholder="10-digit mobile number (e.g. 9876543210)"
+            disabled={loading}
+            required
+          />
+
+          <Input
+            label="Create Password"
+            type="password"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            error={errors.password}
+            placeholder="Minimum 6 characters"
+            disabled={loading}
+            required
+          />
+
+          <Input
+            label="Confirm Password"
+            type="password"
+            value={formData.confirmPassword}
+            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+            error={errors.confirmPassword}
+            placeholder="Re-enter password"
+            disabled={loading}
+            required
+          />
+
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            loading={loading}
+            icon={<UserPlus size={18} />}
           >
-            {loading ? 'Creating account...' : 'Sign Up'}
-          </button>
+            {loading ? 'Creating account...' : `Create ${role === 'FARMER' ? 'Farmer' : 'Customer'} Account`}
+          </Button>
         </form>
 
-        {/* 'or' Divider */}
-        <div className="auth-or-divider">
-          <span>or</span>
-        </div>
-
-        {/* Bottom Navigation */}
-        <div className="auth-switch-link-wrapper">
-          <span>Already have an account?</span>
-          <Link to="/login" className="auth-switch-link-accent">
-            Login
+        {/* Link to login */}
+        <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '1.5rem' }}>
+          Already have an account?{' '}
+          <Link to="/login" style={{ color: 'var(--primary-800)', fontWeight: '700' }}>
+            Sign In Here
           </Link>
-        </div>
+        </p>
 
       </div>
     </div>

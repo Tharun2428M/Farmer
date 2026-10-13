@@ -47,10 +47,6 @@ import ProtectedRoute from '../components/common/ProtectedRoute';
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* Standalone Authentication Routes (No Storefront Navbar / Header) */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-
       {/* Main Public & Customer/Farmer Storefront Route Tree */}
       <Route path="/" element={<MainLayout />}>
         {/* Public Catalog & Marketing Routes */}
@@ -61,6 +57,10 @@ export const AppRoutes = () => {
         <Route path="about" element={<AboutPage />} />
         <Route path="contact" element={<ContactPage />} />
         <Route path="unauthorized" element={<UnauthorizedPage />} />
+
+        {/* Authentication Routes */}
+        <Route path="login" element={<Login />} />
+        <Route path="signup" element={<Signup />} />
 
         {/* Authenticated Notifications Route (Available for all logged-in roles) */}
         <Route

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, User, Tractor, Shield, ArrowLeft } from 'lucide-react';
+import { Sprout, LogIn, AlertCircle, CheckCircle2, User, Tractor, Shield } from 'lucide-react';
+import Input from '../../components/common/Input';
+import Button from '../../components/common/Button';
 import useAuth from '../../hooks/useAuth';
 
 export const Login = () => {
@@ -10,7 +12,7 @@ export const Login = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -85,109 +87,53 @@ export const Login = () => {
   };
 
   return (
-    <div className="auth-page-wrapper">
-      {/* Return to Home / Storefront Link */}
-      <Link
-        to="/"
-        className="auth-back-link"
-        style={{
-          position: 'absolute',
-          top: '1.25rem',
-          left: '1.25rem',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.45rem',
-          color: '#1b4332',
-          backgroundColor: 'rgba(255, 255, 255, 0.92)',
-          backdropFilter: 'blur(8px)',
-          padding: '0.5rem 1rem',
-          borderRadius: '9999px',
-          fontWeight: '700',
-          fontSize: '0.85rem',
-          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-          textDecoration: 'none',
-          zIndex: 10,
-          border: '1px solid rgba(0, 0, 0, 0.06)',
-          transition: 'all 0.2s ease'
-        }}
-      >
-        <ArrowLeft size={16} />
-        <span>Back to Store</span>
-      </Link>
-
-      <div className="auth-card-panel">
-        
-        {/* 3-Leaf Sprout Green Logo */}
-        <Link to="/" className="auth-logo-box" title="Return to FarmersMarket Home" style={{ textDecoration: 'none' }}>
-          <svg
-            className="auth-logo-svg"
-            viewBox="0 0 48 42"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-label="Farmers Marketplace Logo"
-          >
-            {/* Left Leaf */}
-            <path
-              d="M22 28C14 26 8 18 10 10C17 9 24 16 23 25"
-              fill="#52b788"
-            />
-            <path
-              d="M10 10C16 17 20 23 22 28"
-              stroke="#3a8b62"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            {/* Center Leaf */}
-            <path
-              d="M24 28C20 18 20 8 24 2C28 8 28 18 24 28Z"
-              fill="#40916c"
-            />
-            <path
-              d="M24 2V28"
-              stroke="#2d6a4f"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            {/* Right Leaf */}
-            <path
-              d="M26 28C34 26 40 18 38 10C31 9 24 16 25 25"
-              fill="#52b788"
-            />
-            <path
-              d="M38 10C32 17 28 23 26 28"
-              stroke="#3a8b62"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            {/* Base Stem */}
-            <path
-              d="M24 28V36"
-              stroke="#40916c"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </Link>
-
-        {/* Small Orange Pre-Heading */}
-        <p className="auth-pre-title">Welcome Back!</p>
-
-        {/* Large White Heading */}
-        <h1 className="auth-main-title">Login to Your Account</h1>
-
-        {/* Subtitle */}
-        <p className="auth-subtitle-text">
-          Access your account to continue<br />fresh and healthy journey.
-        </p>
+    <div style={{
+      backgroundColor: 'var(--bg-app)',
+      minHeight: '80vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '3.5rem 1.25rem'
+    }}>
+      <div className="card" style={{
+        width: '100%',
+        maxWidth: '460px',
+        padding: '2.5rem',
+        backgroundColor: 'var(--bg-surface)',
+        borderRadius: 'var(--radius-xl)',
+        boxShadow: 'var(--shadow-md)'
+      }}>
+        {/* Brand Icon Header */}
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--primary-800)',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 0.75rem auto'
+          }}>
+            <Sprout size={28} />
+          </div>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--primary-900)' }}>
+            Welcome Back
+          </h1>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+            Sign in to access your direct marketplace account
+          </p>
+        </div>
 
         {/* Server Error Alert */}
         {serverError && (
           <div style={{
-            padding: '0.8rem 1rem',
+            padding: '0.85rem 1rem',
             backgroundColor: '#fee2e2',
             color: '#991b1b',
-            borderRadius: '8px',
-            marginBottom: '1.25rem',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '1.5rem',
             fontSize: '0.8125rem',
             display: 'flex',
             alignItems: 'center',
@@ -201,139 +147,110 @@ export const Login = () => {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} noValidate>
-          {/* Email Field */}
-          <div className="auth-field-group">
-            <label htmlFor="login-email" className="auth-field-label">
-              Email Address
-            </label>
-            <div className="auth-input-container">
-              <span className="auth-left-icon">
-                <Mail size={18} />
-              </span>
-              <input
-                id="login-email"
-                type="email"
-                className={`auth-input-elem ${errors.email ? 'has-error' : ''}`}
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errors.email) setErrors({ ...errors, email: null });
-                }}
-                disabled={loading}
-                autoComplete="email"
-                required
-              />
-            </div>
-            {errors.email && <span className="auth-error-msg">{errors.email}</span>}
-          </div>
-
-          {/* Password Field */}
-          <div className="auth-field-group" style={{ marginBottom: '0.35rem' }}>
-            <label htmlFor="login-password" className="auth-field-label">
-              Password
-            </label>
-            <div className="auth-input-container">
-              <span className="auth-left-icon">
-                <Lock size={18} />
-              </span>
-              <input
-                id="login-password"
-                type={showPassword ? 'text' : 'password'}
-                className={`auth-input-elem ${errors.password ? 'has-error' : ''}`}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (errors.password) setErrors({ ...errors, password: null });
-                }}
-                disabled={loading}
-                autoComplete="current-password"
-                required
-              />
-              <button
-                type="button"
-                className="auth-right-action-btn"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex="-1"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            {errors.password && <span className="auth-error-msg">{errors.password}</span>}
-          </div>
-
-          {/* Forgot Password Link */}
-          <div className="auth-forgot-row">
-            <button
-              type="button"
-              className="auth-forgot-link"
-              onClick={() => alert('Password reset instructions will be sent to your registered email address.')}
-            >
-              Forgot Password?
-            </button>
-          </div>
-
-          {/* Login Button */}
-          <button
-            type="submit"
-            className="auth-submit-btn"
+          <Input
+            label="Email Address"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={errors.email}
+            placeholder="you@example.com"
             disabled={loading}
-            id="login-submit-button"
+            required
+          />
+
+          <Input
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={errors.password}
+            placeholder="Enter your password"
+            disabled={loading}
+            required
+          />
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '1.5rem',
+            fontSize: '0.8125rem'
+          }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: 'var(--text-body)' }}>
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                style={{ accentColor: 'var(--primary-700)' }}
+              />
+              Remember me
+            </label>
+
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+              Spring Boot + Supabase
+            </span>
+          </div>
+
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            loading={loading}
+            icon={<LogIn size={18} />}
           >
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
+            {loading ? 'Signing in...' : 'Sign In to Account'}
+          </Button>
         </form>
 
-        {/* 'or' Divider */}
-        <div className="auth-or-divider">
-          <span>or</span>
-        </div>
-
-        {/* Bottom Navigation */}
-        <div className="auth-switch-link-wrapper">
-          <span>Don't have an account?</span>
-          <Link to="/signup" className="auth-switch-link-accent">
-            Sign Up
-          </Link>
-        </div>
-
-        {/* Demo Quick-Autofill Helpers */}
-        <div className="auth-demo-helper-box">
-          <p className="auth-demo-helper-title">
-            Quick Demo Autofill
+        {/* Demo Fill Helper */}
+        <div style={{
+          marginTop: '2rem',
+          paddingTop: '1.5rem',
+          borderTop: '1px solid var(--border-light)',
+          textAlign: 'center'
+        }}>
+          <p style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+            Quick Demo Autofill:
           </p>
-          <div className="auth-demo-pills-row">
-            <button
-              type="button"
-              className="auth-demo-pill-btn"
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => handleFillDemo('customer@farmersmarket.local', 'Password123')}
+              icon={<User size={13} />}
               disabled={loading}
             >
-              <User size={13} />
-              <span>Customer</span>
-            </button>
-            <button
-              type="button"
-              className="auth-demo-pill-btn"
+              Customer
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => handleFillDemo('farmer@farmersmarket.local', 'Password123')}
+              icon={<Tractor size={13} />}
               disabled={loading}
             >
-              <Tractor size={13} />
-              <span>Farmer</span>
-            </button>
-            <button
-              type="button"
-              className="auth-demo-pill-btn"
-              onClick={() => handleFillDemo('admin@farmersmarket.local', 'Password123')}
+              Farmer
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleFillDemo('admin@farmersmarket.local', 'Admin@123')}
+              icon={<Shield size={13} />}
               disabled={loading}
             >
-              <Shield size={13} />
-              <span>Admin</span>
-            </button>
+              Admin
+            </Button>
           </div>
         </div>
+
+        {/* Sign up link */}
+        <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '1.5rem' }}>
+          Don't have an account yet?{' '}
+          <Link to="/signup" style={{ color: 'var(--primary-800)', fontWeight: '700' }}>
+            Create an Account
+          </Link>
+        </p>
 
       </div>
     </div>
